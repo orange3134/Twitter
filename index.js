@@ -15,7 +15,7 @@ var query = {
     'tweet.fields': 'created_at',
     'expansions': 'author_id,attachments.media_keys',
     'media.fields': 'url',
-    'user.fields': 'id,name,username,profile_image_url'
+    'user.fields': 'id,name,username,profile_image_url,url'
 };
 
 app.get("/search", async function(req, res) {
@@ -80,6 +80,7 @@ function formatForNeos(response){
         element.account_name = author.name;
         element.account_id = author.username;
         element.account_icon = author.profile_image_url;
+        element.url = author.url;
     });
 
     data = response.data;
