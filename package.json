@@ -1,0 +1,11 @@
+{
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^16.0.1",
+    "needle": "^3.1.0",
+    "twitter-api-sdk": "^1.0.9"
+  },
+  "scripts": {
+    "start": "node index.js"
+  }
+}
