@@ -37,7 +37,6 @@ app.get("/search", async function(req, res) {
 
     } catch (e) {
         console.log(e);
-        process.exit(-1);
     }
 });
 
