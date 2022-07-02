@@ -12,7 +12,7 @@ const token = process.env.BEARER_TOKEN;
 const endpointUrl = "https://api.twitter.com/2/tweets/search/recent";
 
 var query = {
-    'tweet.fields': 'created_at',
+    'tweet.fields': 'created_at,public_metrics',
     'expansions': 'author_id,attachments.media_keys',
     'media.fields': 'url',
     'user.fields': 'id,name,username,profile_image_url,url'
@@ -68,7 +68,9 @@ function formatForNeos(response){
             var media_urls = [];
             element.attachments.media_keys.forEach(key =>{
                 var media = response.includes.media.find((media) => media.media_key === key);
-                media_urls.push(media.url);
+                if(media.url !== undefined){
+                    media_urls.push(media.url);
+                }
             })
 
             delete element.attachments;
