@@ -2,24 +2,48 @@
 // https://developer.twitter.com/en/docs/twitter-api/tweets/search/quick-start/recent-search
 require('dotenv').config();
 const needle = require('needle');
+const json2emap = require("json2emap");
 
+var express = require("express");
+var app = express();
+var port = process.env.PORT || 3000;
 
-// The code below sets the bearer token from your environment variables
-// To set environment variables on macOS or Linux, run the export command below from the terminal:
-// export BEARER_TOKEN='YOUR-TOKEN'
 const token = process.env.BEARER_TOKEN;
-
 const endpointUrl = "https://api.twitter.com/2/tweets/search/recent";
 
-async function getRequest() {
+var query = {
+    'tweet.fields': 'created_at',
+    'expansions': 'author_id,attachments.media_keys',
+    'media.fields': 'url',
+    'user.fields': 'id,name,username,profile_image_url'
+};
 
-    // Edit query parameters below
-    // specify a search query, and any additional fields that are required
-    // by default, only the Tweet ID and text fields are returned
-    const params = {
-        'query': 'from:twitterdev -is:retweet',
-        'tweet.fields': 'author_id'
+app.get("/search", async function(req, res) {
+    try {
+        // Make request
+        query['query'] = req.query.query;
+        query['max_results'] = req.query.max_results;
+        console.log(query);
+        const response = await getRequest(query);
+
+        var responseNeos = formatForNeos(response);
+        
+        console.log(responseNeos);
+
+        //console.dir(response, {
+        //    depth: null
+        //});
+        res.status(200).send(json2emap(responseNeos));
+
+    } catch (e) {
+        console.log(e);
+        process.exit(-1);
     }
+});
+
+async function getRequest(query) {
+
+    const params = query;
 
     const res = await needle('get', endpointUrl, params, {
         headers: {
@@ -35,18 +59,33 @@ async function getRequest() {
     }
 }
 
-(async () => {
+function formatForNeos(response){
+    //Neos用に整形
+    response.data.forEach(element => {
+        //メディアIDをURLに置き換え
+        if(element.attachments !== undefined){
 
-    try {
-        // Make request
-        const response = await getRequest();
-        console.dir(response, {
-            depth: null
-        });
+            var media_urls = [];
+            element.attachments.media_keys.forEach(key =>{
+                var media = response.includes.media.find((media) => media.media_key === key);
+                media_urls.push(media.url);
+            })
 
-    } catch (e) {
-        console.log(e);
-        process.exit(-1);
-    }
-    process.exit();
-})();
+            delete element.attachments;
+            element.media_urls = media_urls;
+        };
+
+        //author_idからユーザー情報を取得
+        var author = response.includes.users.find((user) => user.id === element.author_id);
+        element.account_name = author.name;
+        element.account_id = author.username;
+        element.account_icon = author.profile_image_url;
+    });
+
+    data = response.data;
+
+    return data;
+}
+
+app.listen(port);
+console.log("Server started");
