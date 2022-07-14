@@ -26,15 +26,14 @@ app.get("/search", async function(req, res) {
         console.log(query);
         const response = await getRequest(query);
 
-        var responseNeos = formatForNeos(response);
-        
+        if(response.meta.result_count !== 0){
+            var responseNeos = formatForNeos(response);
+        }else{
+            var responseNeos = {response: "Tweet not found"}
+        }
+
         console.log(responseNeos);
-
-        //console.dir(response, {
-        //    depth: null
-        //});
         res.status(200).send(json2emap(responseNeos));
-
     } catch (e) {
         console.log(e);
     }
