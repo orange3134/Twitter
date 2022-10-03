@@ -22,7 +22,7 @@ app.get("/search", async function(req, res) {
     try {
         // Make request
         query['query'] = req.query.query;
-        query['max_results'] = req.query.max_results;
+        query['max_results'] = (10 <= req.query.max_results && req.query.max_results <= 100 ) ? req.query.max_results : 10;
         console.log(query);
         const response = await getRequest(query);
 
@@ -32,7 +32,7 @@ app.get("/search", async function(req, res) {
             var responseNeos = {response: "Tweet not found"}
         }
 
-        console.log(responseNeos);
+        //console.log(responseNeos);
         res.status(200).send(json2emap(responseNeos));
     } catch (e) {
         console.log(e);
